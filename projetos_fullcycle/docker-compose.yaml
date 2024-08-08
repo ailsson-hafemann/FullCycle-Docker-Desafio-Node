@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  db:
+    image: mysql:5.7
+    command: --innodb-use-native-aio=0
+    container_name: db
+    restart: always
+    tty: true
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=nodedb
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      - redeinterna
+
+  nodeapp:
+    build:
+      context: ./Node
+    image: ailssonhafemann/nodeapp
+    container_name: nodeapp
+    volumes:
+      - ./Node:/usr/src/app
+    tty: true
+    networks:
+      - redeinterna
+    depends_on:
+      - db
+
+  ngapp:
+    build:
+      context: ./nginx
+    image: ailssonhafemann/ngapp
+    container_name: ngapp
+    networks:
+      - redeinterna
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+      - nodeapp
+
+networks:
+  redeinterna:
+    driver: bridge
