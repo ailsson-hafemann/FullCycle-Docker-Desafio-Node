@@ -1,4 +1,4 @@
-FROM node:20
+FROM node:22.6-slim
 
 WORKDIR /usr/src/app
 
@@ -8,4 +8,4 @@ RUN npm i
 
 EXPOSE 3000
 
-CMD ["node", "index.js"]
+ENTRYPOINT ["node", "index.js"]

@@ -1,32 +1,44 @@
 version: '3'
 
 services:
+
   db:
-    image: mysql:5.7
+    build:
+      context: ./database
     command: --innodb-use-native-aio=0
     container_name: db
     restart: always
     tty: true
     volumes:
       - ./mysql:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       - MYSQL_DATABASE=nodedb
       - MYSQL_ROOT_PASSWORD=root
     networks:
       - redeinterna
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD" ]
+      interval: 5s
+      timeout: 60s
+      retries: 6
 
   nodeapp:
     build:
-      context: ./Node
-    image: ailssonhafemann/nodeapp
+      context: ./node
     container_name: nodeapp
-    volumes:
-      - ./Node:/usr/src/app
+    image: ailssonhafemann/nodeapp
     tty: true
     networks:
       - redeinterna
+    healthcheck:
+      test: [ "CMD","curl", "-f","http://localhost:3000"]
+      interval: 5s
+      timeout: 30s
+      retries: 6
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   ngapp:
     build:
@@ -38,9 +50,13 @@ services:
     ports:
       - "8080:80"
     depends_on:
-      - db
-      - nodeapp
+      nodeapp:
+        condition: service_healthy
 
 networks:
   redeinterna:
     driver: bridge
+
+volumes:
+  mysql:
+    driver: local
