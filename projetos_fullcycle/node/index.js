@@ -13,14 +13,15 @@ const connection = mysql.createConnection(config)
 const name = 'teste_' + Math.random()
 const sql = `INSERT INTO people(name) values ('${name}')`
 connection.query(sql)
-
-app.get('/', (req, res) => {listPeople(res, connection)})
+connection.end();
+app.get('/', (req, res) => {listPeople(res, mysql)})
 app.listen(port, () => {
     console.log("Server running on 3000");
 });
 
 
-function listPeople(res, connection){
+function listPeople(res, mysql){
+    let connection = mysql.createConnection(config)
     const sql = `SELECT id, name FROM people`;
 
     connection.query(sql, (error, results, fields) => {
