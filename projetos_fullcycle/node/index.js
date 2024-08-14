@@ -9,6 +9,7 @@ const config = {
 }
 const mysql = require('mysql')
 const connection = mysql.createConnection(config)
+createTable();
 
 const name = 'teste_' + Math.random()
 const sql = `INSERT INTO people(name) values ('${name}')`
@@ -39,4 +40,16 @@ function listPeople(res, mysql){
         res.send('<h1>Full Cycle Rocks!</h1>' + table);
     });
     connection.end();
+}
+
+function createTable() {
+    const sql = `
+        CREATE TABLE IF NOT EXISTS people (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL
+        )
+    `;
+
+    connection.query(sql);
+    console.log('Tabela criada ou já existe.');
 }
